@@ -1,0 +1,7 @@
+исторические данные по акции --https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/EQNE/securities/gazp.json?from=2013-06-01&till=2013-12-20 c 2008 12 12 до 2013-08-01
+
+список акций -https://iss.moex.com/iss/engines/stock/markets/shares/boards/tqbr/securities.xml?iss.meta=off&iss.only=securities&securities.columns=SECID,PREVPRICE,SHORTNAME,BOARDID
+
+https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities/GMKN.json?from=2005-06-22&iss.meta=off&iss.only=history&history.columns=SHORTNAME,SECID,WAPRICE,TRADEDATE    с 2014-06-09 до нынешнее
+
+https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities/cian.json?from=2014-06-09&till=2014-06-09&iss.meta=off&iss.only=history&history.columns=SHORTNAME,SECID,WAPRICE,TRADEDATE

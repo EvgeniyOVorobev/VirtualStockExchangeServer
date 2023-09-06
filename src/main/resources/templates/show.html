@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div5 th:each="LocalDate:${date}"  >
+    <table border="1"  >
+        <tr>
+            <th>Сейчас</th>
+            <td width="200"  th:text="${date}" >имя</td>
+
+        </tr>
+    </table>
+</div5>
+<form action="#" th:action="@{/setDate}" th:object="${LocalDate}" method="post">
+    <p>Выберите дату: <input type="date" name="calendar">
+        <input type="submit" value="Назначить дату"></p>
+
+</form>
+Список акций
+
+<table border="1" width="400" >
+    <tr><th width="200">Акция</th>                              <th width="200">Цена</th></tr>
+
+</table>
+<table>
+    <tr>
+        <td>
+            <table>
+                <tr>
+                    <td>
+
+<div1 th:each="SharePrice:${people}" >
+    <form action="#" th:action="@{/buyShare}" th:object="${SharePrice}" method="post">
+       <table border="1"  >
+        <tr>
+            <td width="200"  th:text="${SharePrice.getShortName}">имя</td>              <td width="100" th:text="${SharePrice.getPrice} +  ' ' + &#8381">цена</td>
+            <td>
+                <div class="d-grid gap-2 d-md-block">
+                    <input name="shortName" id="shortName" th:value="${SharePrice.getShortName}" type="hidden"/>
+                    <input name="price" id="price" th:value="${SharePrice.getPrice}" type="hidden"/>
+                    <input name="date" id="date" th:value="${SharePrice.getDate}" type="hidden"/>
+                    <input name="secid" id="secid" th:value="${SharePrice.getSecid}" type="hidden"/>
+                    <input type="number" name="t" value="1" min="1" max="100" step="1">
+                    <button type="submit" value="Купить">Купить</button>
+                </div>
+            </td>
+        </tr>
+       </table>
+    </form>
+</div1>
+                    </td>
+                </tr>
+            </table>
+        </td>
+        <td>
+            <table>
+                <tr>
+                    <td>
+
+                        <div2 th:each="double:${sum}"  >
+                            <table border="1"  >
+                                <tr>
+                                    <th>портфель</th>
+                                    <td width="200"  th:text="${sum} +  ' ' + &#8381" >имя</td>
+
+                                </tr>
+                            </table>
+                        </div2>
+                    </td>
+                </tr>
+            </table>
+        </td>
+        <td>
+            <table>
+                <tr>
+                    <td>
+
+<div2 th:each="SharePrice:${user1}"  >
+    <form action="#" th:action="@{/sellShare}" th:object="${SharePrice}" method="post">
+    <table border="1"  >
+        <tr>
+            <td width="200"  th:text="${SharePrice.getShortName}">имя</td>     <td width="50" th:text="${SharePrice.getCount}">шт</td>        <td width="100" th:text="${SharePrice.getPrice} +  ' ' + &#8381">цена</td> <td width="100"  th:text="${SharePrice.getDifference + '%'}" >разница</td>
+            <td>
+                <div class="d-grid gap-2 d-md-block">
+                    <input name="shortName" id="shortName1" th:value="${SharePrice.getShortName}" type="hidden"/>
+                    <input name="price" id="price1" th:value="${SharePrice.getPrice}" type="hidden"/>
+                    <input name="date" id="date1" th:value="${SharePrice.getDate}" type="hidden"/>
+                    <input name="secid" id="secid1" th:value="${SharePrice.getSecid}" type="hidden"/>
+                    <input type="number" name="s" value="1" min="1" max="100" step="1">
+                    <button type="submit" value="Продать">Продать</button>
+                </div>
+            </td>
+
+           </tr>
+    </table>
+    </form>
+</div2>
+                    </td>
+                </tr>
+            </table>
+        </td>
+
+    </tr>
+</table>
+</body>
+</html>
