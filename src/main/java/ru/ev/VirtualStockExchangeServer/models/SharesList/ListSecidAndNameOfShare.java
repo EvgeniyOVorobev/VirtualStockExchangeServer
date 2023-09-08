@@ -2,9 +2,6 @@
 package ru.ev.VirtualStockExchangeServer.models.SharesList;
 
 import com.fasterxml.jackson.annotation.*;
-import lombok.Data;
-
-import ru.ev.VirtualStockExchangeServer.models.SharePrice.SharePrice;
 
 
 import javax.annotation.processing.Generated;
@@ -18,21 +15,21 @@ import java.util.List;
 })
 @Generated("jsonschema2pojo")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ListShare {
+public class ListSecidAndNameOfShare {
 
 
     @JsonProperty("data")
     @JsonFormat(shape = JsonFormat.Shape.ARRAY)
-    private List<Share> shares;
+    private List<SecidAndNameOfShare> shares;
 
 
     @JsonProperty("data")
-    public List<Share> getShares() {
+    public List<SecidAndNameOfShare> getShares() {
         return shares;
     }
 
     @JsonProperty("data")
-    public void setShares(List<Share> data) {
+    public void setShares(List<SecidAndNameOfShare> data) {
         this.shares = data;
     }
 

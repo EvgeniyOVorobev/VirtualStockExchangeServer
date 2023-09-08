@@ -32,17 +32,17 @@
                 <tr>
                     <td>
 
-<div1 th:each="SharePrice:${people}" >
-    <form action="#" th:action="@{/buyShare}" th:object="${SharePrice}" method="post">
+<div1 th:each="SharePriceDTO:${listOfPrice}" >
+    <form action="#" th:action="@{/buyShare}" th:object="${SharePriceDTO}" method="post">
        <table border="1"  >
         <tr>
-            <td width="200"  th:text="${SharePrice.getShortName}">имя</td>              <td width="100" th:text="${SharePrice.getPrice} +  ' ' + &#8381">цена</td>
+            <td width="200"  th:text="${SharePriceDTO.getShortName}">имя</td>              <td width="100" th:text="${SharePriceDTO.getPrice} +  ' ' + &#8381">цена</td>
             <td>
                 <div class="d-grid gap-2 d-md-block">
-                    <input name="shortName" id="shortName" th:value="${SharePrice.getShortName}" type="hidden"/>
-                    <input name="price" id="price" th:value="${SharePrice.getPrice}" type="hidden"/>
-                    <input name="date" id="date" th:value="${SharePrice.getDate}" type="hidden"/>
-                    <input name="secid" id="secid" th:value="${SharePrice.getSecid}" type="hidden"/>
+                    <input name="shortName" id="shortName" th:value="${SharePriceDTO.getShortName}" type="hidden"/>
+                    <input name="price" id="price" th:value="${SharePriceDTO.getPrice}" type="hidden"/>
+                    <input name="date" id="date" th:value="${SharePriceDTO.getDate}" type="hidden"/>
+                    <input name="secid" id="secid" th:value="${SharePriceDTO.getSecid}" type="hidden"/>
                     <input type="number" name="t" value="1" min="1" max="100" step="1">
                     <button type="submit" value="Купить">Купить</button>
                 </div>
@@ -78,7 +78,7 @@
                 <tr>
                     <td>
 
-<div2 th:each="SharePrice:${user1}"  >
+<div2 th:each="SharePrice:${userShares}"  >
     <form action="#" th:action="@{/sellShare}" th:object="${SharePrice}" method="post">
     <table border="1"  >
         <tr>

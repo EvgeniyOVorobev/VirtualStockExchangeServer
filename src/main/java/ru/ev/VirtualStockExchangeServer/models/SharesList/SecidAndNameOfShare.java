@@ -1,6 +1,5 @@
 package ru.ev.VirtualStockExchangeServer.models.SharesList;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
@@ -8,7 +7,6 @@ import lombok.Data;
 
 
 import javax.annotation.processing.Generated;
-import java.time.LocalDate;
 
 @Entity
 @Table(name="sharlist")
@@ -16,7 +14,7 @@ import java.time.LocalDate;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("jsonschema2pojo")
 @JsonIgnoreProperties(value = { "id" })
-public class Share {
+public class SecidAndNameOfShare {
     @Id
     @Column(name="id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)

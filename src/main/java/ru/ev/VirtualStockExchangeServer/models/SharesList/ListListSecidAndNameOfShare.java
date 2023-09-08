@@ -3,7 +3,6 @@ package ru.ev.VirtualStockExchangeServer.models.SharesList;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import lombok.Data;
 
 import javax.annotation.processing.Generated;
 
@@ -16,17 +15,17 @@ import javax.annotation.processing.Generated;
         "history"
 })
 @Generated("jsonschema2pojo")
-public class ListListShare {
+public class ListListSecidAndNameOfShare {
     @JsonProperty("history")
-    private ListShare listShare;
+    private ListSecidAndNameOfShare listShare;
 
     @JsonProperty("history")
-    public ListShare getListShare() {
+    public ListSecidAndNameOfShare getListShare() {
         return listShare;
     }
 
     @JsonProperty("history")
-    public void setListShare(ListShare history) {
+    public void setListShare(ListSecidAndNameOfShare history) {
         this.listShare = history;
     }
 

@@ -3,7 +3,7 @@ package ru.ev.VirtualStockExchangeServer.models.SharePrice;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import ru.ev.VirtualStockExchangeServer.models.SharePriceForList.SharePriceForList;
+import ru.ev.VirtualStockExchangeServer.models.SharePriceForList.ListOfPrice;
 
 
 import javax.annotation.processing.Generated;
@@ -136,7 +136,7 @@ public class SharePrice {
                 ", date=" + date +
                 '}';
     }
-    public static SharePrice convertToSharePrice(SharePriceForList list){
+    public static SharePrice convertToSharePrice(ListOfPrice list){
         SharePrice sharePrice=new SharePrice();
         sharePrice.setPrice(list.getPrice());
         sharePrice.setDate(list.getDate());

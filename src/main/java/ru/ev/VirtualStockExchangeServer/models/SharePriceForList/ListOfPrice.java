@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name="listofshareprice")
 @Data
-public class SharePriceForList {
+public class ListOfPrice {
     @Id
     @Column(name="id")
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -24,8 +24,8 @@ public class SharePriceForList {
     private LocalDate date;
 
 
-    public SharePriceForList getShareFoListOfPrice(SharePrice sharePrices) {
-        SharePriceForList sharePriceForList = new SharePriceForList();
+    public ListOfPrice getShareFoListOfPrice(SharePrice sharePrices) {
+        ListOfPrice sharePriceForList = new ListOfPrice();
         sharePriceForList.setPrice(sharePrices.getPrice());
         sharePriceForList.setDate(sharePrices.getDate());
         sharePriceForList.setSecid(sharePrices.getSecid());
