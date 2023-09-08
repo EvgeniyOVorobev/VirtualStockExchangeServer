@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import ru.ev.VirtualStockExchangeServer.DTO.SharePriceDTO;
 import ru.ev.VirtualStockExchangeServer.DTO.UserSharePriceDTO;
+import ru.ev.VirtualStockExchangeServer.Exeption.RestTemplateResponseErrorHandler;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.ListListSharePrice;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.ListSharePrice;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.SharePrice;
@@ -42,11 +43,11 @@ public class MainService {
     @Autowired
     private final ShareListRepository shareListRepository;
     private final SharePriceForListRepository sharePriceForListRepository;
-    private final Environment environment;
     private final SharePriceRepository sharePriceRepository;
-    UserShares userShares = new UserShares();
-    ObjectMapper objectMapper = new ObjectMapper();
-    RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper objectMapper;
+
+     private final UserShares userShares = new UserShares();
+
     @Value("${urlForListOfPrice1}")
     String a ;
     @Value("${urlForListOfPrice2}")
@@ -76,7 +77,11 @@ public class MainService {
 
     @Transactional
     public List<SharePrice> showPrice(String secid) throws JsonProcessingException {
+        RestTemplate restTemplate = new RestTemplate();
+        log.info("Request for share {}", secid);
+        restTemplate.setErrorHandler(new RestTemplateResponseErrorHandler());
         String json = restTemplate.getForObject(a + secid + c + date1 + ca + date2 + de, String.class);
+        log.info("Getting share from Moex");
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.findAndRegisterModules();
         ListListSharePrice listShare = objectMapper.readValue(json, ListListSharePrice.class);
@@ -96,9 +101,12 @@ public class MainService {
     }
     @Transactional
     public List<SecidAndNameOfShare> showListOfShortNameShares() throws JsonProcessingException {
+        RestTemplate restTemplate = new RestTemplate();
         List<SecidAndNameOfShare> shareList = new ArrayList<>();
         if (shareListRepository.findAll().isEmpty()) {
+            restTemplate.setErrorHandler(new RestTemplateResponseErrorHandler());
             String jsonList = restTemplate.getForObject("https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities.json?from=" + date1 + "&till=" + date2 + "&iss.meta=off&iss.only=history&history.columns=SHORTNAME,SECID", String.class);
+            log.error("Getting short name of share");
             ListListSecidAndNameOfShare listShare22 = objectMapper.readValue(jsonList, ListListSecidAndNameOfShare.class);
             ListSecidAndNameOfShare listShar = listShare22.getListShare();
             shareList = listShar.getShares();
@@ -201,11 +209,9 @@ public class MainService {
 
         for (ListOfPrice x:oldPrices
         ) {sharePriceForListRepository.delete(x);
-            System.out.println("delete");
         }
         for (ListOfPrice x:Prices
         ) {sharePriceForListRepository.save(x);
-            System.out.println("save2");
         }
     }
     public SharePriceDTO convertToShareDTO(SharePrice sharePrice){
