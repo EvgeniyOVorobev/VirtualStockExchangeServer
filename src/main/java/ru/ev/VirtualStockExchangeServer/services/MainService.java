@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import ru.ev.VirtualStockExchangeServer.DTO.SharePriceDTO;
 import ru.ev.VirtualStockExchangeServer.DTO.UserSharePriceDTO;
+import ru.ev.VirtualStockExchangeServer.Exeption.LimitRequestsException;
 import ru.ev.VirtualStockExchangeServer.Exeption.RestTemplateResponseErrorHandler;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.ListListSharePrice;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.ListSharePrice;
@@ -81,6 +82,10 @@ public class MainService {
         log.info("Request for share {}", secid);
         restTemplate.setErrorHandler(new RestTemplateResponseErrorHandler());
         String json = restTemplate.getForObject(a + secid + c + date1 + ca + date2 + de, String.class);
+        if(json.isEmpty()){
+            log.error("Moex isn't answering for getting prices.");
+            throw new LimitRequestsException("Moex isn't answering for getting prices.");
+        }
         log.info("Getting share from Moex");
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.findAndRegisterModules();
@@ -107,6 +112,10 @@ public class MainService {
             restTemplate.setErrorHandler(new RestTemplateResponseErrorHandler());
             String jsonList = restTemplate.getForObject("https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities.json?from=" + date1 + "&till=" + date2 + "&iss.meta=off&iss.only=history&history.columns=SHORTNAME,SECID", String.class);
             log.error("Getting short name of share");
+            if(jsonList.isEmpty()){
+                log.error("Moex isn't answering for getting secid.");
+                throw new LimitRequestsException("Moex isn't answering for getting secid.");
+            }
             ListListSecidAndNameOfShare listShare22 = objectMapper.readValue(jsonList, ListListSecidAndNameOfShare.class);
             ListSecidAndNameOfShare listShar = listShare22.getListShare();
             shareList = listShar.getShares();
