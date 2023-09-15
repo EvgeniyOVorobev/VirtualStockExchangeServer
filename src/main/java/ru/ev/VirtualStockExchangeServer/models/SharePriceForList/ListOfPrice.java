@@ -1,9 +1,10 @@
 package ru.ev.VirtualStockExchangeServer.models.SharePriceForList;
 
-import jakarta.persistence.*;
+
 import lombok.Data;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.SharePrice;
 
+import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity

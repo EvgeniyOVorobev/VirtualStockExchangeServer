@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.ev.VirtualStockExchangeServer.DTO.SharePriceDTO;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.SharePrice;
@@ -47,9 +48,16 @@ public class MoexShareController {
     }
 
     @PostMapping("/sellShare")
-    public String sellShare(@ModelAttribute() SharePriceDTO sharePriceDTO, @ModelAttribute("s") int count) {
+
+    public String sellShare(@ModelAttribute() SharePriceDTO sharePriceDTO,  @ModelAttribute("s") int count) {
         SharePrice sharePrice = mainService.convertToSharePrice(sharePriceDTO);
-        mainService.deleteShare(sharePrice, count);
+       try {
+           mainService.deleteShare(sharePrice, count);
+       }
+       catch (RuntimeException e){
+           System.out.println(e.getMessage());
+           return "ErrorCount";
+       }
         return "redirect:/";
     }
 

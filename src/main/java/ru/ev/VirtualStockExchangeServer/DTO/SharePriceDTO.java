@@ -1,7 +1,7 @@
 package ru.ev.VirtualStockExchangeServer.DTO;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.Column;
+
 
 import java.time.LocalDate;
 

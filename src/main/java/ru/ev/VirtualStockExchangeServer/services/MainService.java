@@ -9,7 +9,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.Environment;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -17,6 +17,7 @@ import ru.ev.VirtualStockExchangeServer.DTO.SharePriceDTO;
 import ru.ev.VirtualStockExchangeServer.DTO.UserSharePriceDTO;
 import ru.ev.VirtualStockExchangeServer.Exeption.LimitRequestsException;
 import ru.ev.VirtualStockExchangeServer.Exeption.RestTemplateResponseErrorHandler;
+import ru.ev.VirtualStockExchangeServer.enums.Role;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.ListListSharePrice;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.ListSharePrice;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.SharePrice;
@@ -24,10 +25,11 @@ import ru.ev.VirtualStockExchangeServer.models.SharePriceForList.ListOfPrice;
 import ru.ev.VirtualStockExchangeServer.models.SharesList.ListListSecidAndNameOfShare;
 import ru.ev.VirtualStockExchangeServer.models.SharesList.ListSecidAndNameOfShare;
 import ru.ev.VirtualStockExchangeServer.models.SharesList.SecidAndNameOfShare;
-import ru.ev.VirtualStockExchangeServer.models.User.UserShares;
+import ru.ev.VirtualStockExchangeServer.models.User.User;
 import ru.ev.VirtualStockExchangeServer.repositories.ShareListRepository;
 import ru.ev.VirtualStockExchangeServer.repositories.SharePriceForListRepository;
 import ru.ev.VirtualStockExchangeServer.repositories.SharePriceRepository;
+import ru.ev.VirtualStockExchangeServer.repositories.UserRepository;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -45,23 +47,29 @@ public class MainService {
     private final ShareListRepository shareListRepository;
     private final SharePriceForListRepository sharePriceForListRepository;
     private final SharePriceRepository sharePriceRepository;
+    private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
+    private final PasswordEncoder passwordEncoder;
 
-     private final UserShares userShares = new UserShares();
+     private final User userShares = new User();
 
     @Value("${urlForListOfPrice1}")
-    String a ;
+   private String a ;
     @Value("${urlForListOfPrice2}")
-    String c ;
-    String date1 = "2014-06-09";
+    private String c ;
+    private String date1 = "2014-06-09";
     @Value("${urlForListOfPrice3}")
-    String ca ;
-    String date2 = "2014-06-09";
+    private String ca ;
+    private String date2 = "2014-06-09";
     @Value("${urlForListOfPrice4}")
-    String de ;
+    private String de ;
 
     public String getDate() {
         return date1;
+    }
+
+    public String getDate2() {
+        return date2;
     }
 
     public void setDate(LocalDate date) {
@@ -188,15 +196,16 @@ public class MainService {
         return sharePriceForListRepository.findAll();
     }
     @Transactional
-    public void deleteShare(SharePrice sharePrice, int x) {
+    public void deleteShare(SharePrice sharePrice, int x) throws RuntimeException {
         sharePrice.setCount(x);
         List<SharePrice> sharePrices = sharePriceRepository.findAll();
         for (int i = 0; i < sharePrices.size(); i++) {
             if (sharePrices.get(i).getShortName().equals(sharePrice.getShortName()) && (sharePrices.get(i).getDate().equals(sharePrice.getDate()))) {
                 int a = sharePrices.get(i).getCount();
                 int b = sharePrice.getCount();
-                if (a - b < 0) {
-                    log.info("Erro");
+                 if (a - b < 0) {
+                    log.info("Error");
+                    throw  new RuntimeException("Errorsses");
                 } else sharePrice.setCount(a - b);
                 if (sharePrice.getCount() == 0) {
                     sharePriceRepository.delete(sharePrices.get(i));
@@ -239,5 +248,46 @@ public class MainService {
         ModelMapper mapper=new ModelMapper();
 
         return mapper.map(sharePrice,UserSharePriceDTO.class);
+    }
+
+    public List<SharePriceDTO> getSharePrice(List<SecidAndNameOfShare> shareList) throws JsonProcessingException {
+        List<SharePrice> sharePrices = new ArrayList<>();
+        List<ListOfPrice> sharePriceForLists = new ArrayList<>();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        if (this.getListOfSharesPrice().isEmpty()) {
+            for (int i = 0; i < shareList.size(); i++) {
+                sharePrices.addAll(this.showPrice(shareList.get(i).getSecid()));
+            }
+        } else if (
+                !this.getDate().equals(this.getListOfSharesPrice().get(0).getDate().format(dateTimeFormatter))) {
+            List<SharePrice> newPrices = new ArrayList<>();
+            for (int i = 0; i < shareList.size(); i++) {
+                newPrices.addAll(this.showPrice(shareList.get(i).getSecid()));
+            }
+            this.saveNewPrices(newPrices);
+            sharePrices = newPrices;
+        } else {
+            sharePriceForLists = this.getListOfSharesPrice();
+            for (int i = 0; i < sharePriceForLists.size(); i++) {
+                sharePrices.add(SharePrice.convertToSharePrice(sharePriceForLists.get(i)));
+            }
+        }
+        List<SharePriceDTO> sharePriceDTOList = new ArrayList<>();
+        for (int i = 0; i < sharePrices.size(); i++) {
+            sharePriceDTOList.add(this.convertToShareDTO(sharePrices.get(i)));
+        }
+
+
+        return sharePriceDTOList;
+    }
+
+    public boolean createUser(User user){
+        if(userRepository.findByName(user.getName())!=null)
+            return false;
+        user.getRoleSet().add(Role.ROLE_USER);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        log.info("Saving new user with name {}",user.getName());
+        userRepository.save(user);
+        return true;
     }
 }

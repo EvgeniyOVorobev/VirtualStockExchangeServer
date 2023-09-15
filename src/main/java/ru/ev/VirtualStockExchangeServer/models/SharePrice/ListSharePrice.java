@@ -2,7 +2,7 @@
 package ru.ev.VirtualStockExchangeServer.models.SharePrice;
 
 import com.fasterxml.jackson.annotation.*;
-import jakarta.persistence.*;
+
 import lombok.Data;
 
 

@@ -82,14 +82,14 @@
     <form action="#" th:action="@{/sellShare}" th:object="${SharePrice}" method="post">
     <table border="1"  >
         <tr>
-            <td width="200"  th:text="${SharePrice.getShortName}">имя</td>     <td width="50" th:text="${SharePrice.getCount}">шт</td>        <td width="100" th:text="${SharePrice.getPrice} +  ' ' + &#8381">цена</td> <td width="100"  th:text="${SharePrice.getDifference + '%'}" >разница</td>
+            <td width="200"  th:text="${SharePrice.getShortName}">имя</td>     <td width="50" th:text="${SharePrice.getCount}" th:name="count">шт</td>        <td width="100" th:text="${SharePrice.getPrice} +  ' ' + &#8381">цена</td> <td width="100"  th:text="${SharePrice.getDifference + '%'}" >разница</td>
             <td>
                 <div class="d-grid gap-2 d-md-block">
                     <input name="shortName" id="shortName1" th:value="${SharePrice.getShortName}" type="hidden"/>
                     <input name="price" id="price1" th:value="${SharePrice.getPrice}" type="hidden"/>
                     <input name="date" id="date1" th:value="${SharePrice.getDate}" type="hidden"/>
                     <input name="secid" id="secid1" th:value="${SharePrice.getSecid}" type="hidden"/>
-                    <input type="number" name="s" value="1" min="1" max="100" step="1">
+                    <input type="number" name="s" value="1" min="1" max=count step="1">
                     <button type="submit" value="Продать">Продать</button>
                 </div>
             </td>
