@@ -2,30 +2,22 @@ package ru.ev.VirtualStockExchangeServer.models.SharePrice;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
+import jakarta.persistence.*;
 import ru.ev.VirtualStockExchangeServer.models.SharePriceForList.ListOfPrice;
-
-
 import javax.annotation.processing.Generated;
-import javax.persistence.*;
 import java.time.LocalDate;
 
-import static java.lang.Math.round;
+
 
 @Entity
 @Table(name="shareprice")
-//@Data
-//@JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("jsonschema2pojo")
-//@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonIgnoreProperties(value = { "id","count","totalCost","oldPrice" })
 public class SharePrice {
     @Id
     @Column(name="id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-//    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
-//    private ListSharePrice listSharePrice;
     @Column(name="shortname")
     private String shortName;
     @Column(name="secid")

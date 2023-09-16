@@ -9,13 +9,26 @@
     <table border="1"  >
         <tr>
             <th>Сейчас</th>
-            <td width="200"  th:text="${date}" >имя</td>
+            <td  th:text="${date}" >имя</td>
 
         </tr>
     </table>
 </div5>
+<div th:each="Double:${bankAccount}">
+    <table border="1"  >
+    <tr>
+    <th>Кошелёк</th>
+    <td   th:text="${bankAccount}" >имя</td>
+    </tr>
+    </table>
+</div>
+<form action="#" th:action="@{/reset}"  method="post">
+
+        <input type="submit" value="Сброс"></p>
+
+</form>
 <form action="#" th:action="@{/setDate}" th:object="${LocalDate}" method="post">
-    <p>Выберите дату: <input type="date" name="calendar">
+    <p>Выберите дату: <input type="date" name="calendar" value="2014-06-09">
         <input type="submit" value="Назначить дату"></p>
 
 </form>
@@ -97,6 +110,7 @@
            </tr>
     </table>
     </form>
+
 </div2>
                     </td>
                 </tr>

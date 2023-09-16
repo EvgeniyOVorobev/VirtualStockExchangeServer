@@ -9,7 +9,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -17,7 +16,6 @@ import ru.ev.VirtualStockExchangeServer.DTO.SharePriceDTO;
 import ru.ev.VirtualStockExchangeServer.DTO.UserSharePriceDTO;
 import ru.ev.VirtualStockExchangeServer.Exeption.LimitRequestsException;
 import ru.ev.VirtualStockExchangeServer.Exeption.RestTemplateResponseErrorHandler;
-import ru.ev.VirtualStockExchangeServer.enums.Role;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.ListListSharePrice;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.ListSharePrice;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.SharePrice;
@@ -29,7 +27,7 @@ import ru.ev.VirtualStockExchangeServer.models.User.User;
 import ru.ev.VirtualStockExchangeServer.repositories.ShareListRepository;
 import ru.ev.VirtualStockExchangeServer.repositories.SharePriceForListRepository;
 import ru.ev.VirtualStockExchangeServer.repositories.SharePriceRepository;
-import ru.ev.VirtualStockExchangeServer.repositories.UserRepository;
+
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -47,22 +45,18 @@ public class MainService {
     private final ShareListRepository shareListRepository;
     private final SharePriceForListRepository sharePriceForListRepository;
     private final SharePriceRepository sharePriceRepository;
-    private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
-    private final PasswordEncoder passwordEncoder;
-
-     private final User userShares = new User();
-
+    private final User userShares = new User();
     @Value("${urlForListOfPrice1}")
-   private String a ;
+    private String a;
     @Value("${urlForListOfPrice2}")
-    private String c ;
+    private String c;
     private String date1 = "2014-06-09";
     @Value("${urlForListOfPrice3}")
-    private String ca ;
+    private String ca;
     private String date2 = "2014-06-09";
     @Value("${urlForListOfPrice4}")
-    private String de ;
+    private String de;
 
     public String getDate() {
         return date1;
@@ -90,7 +84,7 @@ public class MainService {
         log.info("Request for share {}", secid);
         restTemplate.setErrorHandler(new RestTemplateResponseErrorHandler());
         String json = restTemplate.getForObject(a + secid + c + date1 + ca + date2 + de, String.class);
-        if(json.isEmpty()){
+        if (json.isEmpty()) {
             log.error("Moex isn't answering for getting prices.");
             throw new LimitRequestsException("Moex isn't answering for getting prices.");
         }
@@ -112,6 +106,7 @@ public class MainService {
         }
         return priceList;
     }
+
     @Transactional
     public List<SecidAndNameOfShare> showListOfShortNameShares() throws JsonProcessingException {
         RestTemplate restTemplate = new RestTemplate();
@@ -120,7 +115,7 @@ public class MainService {
             restTemplate.setErrorHandler(new RestTemplateResponseErrorHandler());
             String jsonList = restTemplate.getForObject("https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities.json?from=" + date1 + "&till=" + date2 + "&iss.meta=off&iss.only=history&history.columns=SHORTNAME,SECID", String.class);
             log.error("Getting short name of share");
-            if(jsonList.isEmpty()){
+            if (jsonList.isEmpty()) {
                 log.error("Moex isn't answering for getting secid.");
                 throw new LimitRequestsException("Moex isn't answering for getting secid.");
             }
@@ -145,10 +140,13 @@ public class MainService {
         sum = result.doubleValue();
         return sum;
     }
+
     @Transactional
-    public void addUserShares(SharePrice sharePrice) {
+    public void addUserShares(SharePrice sharePrice,int count) {
         if (sharePriceRepository.findAll().isEmpty()) {
             sharePriceRepository.save(sharePrice);
+            userShares.debitingFromAccount(sharePrice.getPrice()*count);
+
         } else {
             List<SharePrice> sharePrices1 = sharePriceRepository.findAll();
             for (int i = 0; i < sharePrices1.size(); i++) {
@@ -159,10 +157,14 @@ public class MainService {
                     sharePrice.setTotalCost();
                     sharePriceRepository.delete(sharePrices1.get(i));
                     sharePriceRepository.save(sharePrice);
-                } else sharePriceRepository.save(sharePrice);
+                    userShares.debitingFromAccount(sharePrice.getPrice()*count);
+                } else {sharePriceRepository.save(sharePrice);
+                    userShares.debitingFromAccount(sharePrice.getPrice()*count);
+                    }
             }
         }
     }
+
     @Transactional
     public List<SharePrice> getUserShares() {
         if (sharePriceRepository.findAll().isEmpty()) {
@@ -191,63 +193,69 @@ public class MainService {
             return userShareOld;
         }
     }
+
     @Transactional
     public List<ListOfPrice> getListOfSharesPrice() {
         return sharePriceForListRepository.findAll();
     }
+
     @Transactional
-    public void deleteShare(SharePrice sharePrice, int x) throws RuntimeException {
-        sharePrice.setCount(x);
+    public void deleteShare(SharePrice sharePrice, int count) throws RuntimeException {
+        sharePrice.setCount(count);
         List<SharePrice> sharePrices = sharePriceRepository.findAll();
         for (int i = 0; i < sharePrices.size(); i++) {
             if (sharePrices.get(i).getShortName().equals(sharePrice.getShortName()) && (sharePrices.get(i).getDate().equals(sharePrice.getDate()))) {
                 int a = sharePrices.get(i).getCount();
                 int b = sharePrice.getCount();
-                 if (a - b < 0) {
+                if (a - b < 0) {
                     log.info("Error");
-                    throw  new RuntimeException("Errorsses");
+                    throw new RuntimeException("Errorsses");
                 } else sharePrice.setCount(a - b);
                 if (sharePrice.getCount() == 0) {
                     sharePriceRepository.delete(sharePrices.get(i));
+                    userShares.plusAccount(sharePrice.getPrice()*count);
                 } else {
                     sharePrice.setTotalCost();
                     sharePriceRepository.delete(sharePrices.get(i));
                     sharePriceRepository.save(sharePrice);
+                    userShares.plusAccount(sharePrice.getPrice()*count);
                 }
             }
         }
     }
+
     @Transactional
     public void saveNewPrices(List<SharePrice> newPrices) {
-        List<ListOfPrice> oldPrices=sharePriceForListRepository.findAll();
-        List<ListOfPrice> Prices=new ArrayList<>();
+        List<ListOfPrice> oldPrices = sharePriceForListRepository.findAll();
+        List<ListOfPrice> Prices = new ArrayList<>();
         for (int i = 0; i < newPrices.size(); i++) {
             Prices.add(new ListOfPrice().getShareFoListOfPrice(newPrices.get(i)));
         }
 
-        for (ListOfPrice x:oldPrices
-        ) {sharePriceForListRepository.delete(x);
+        for (ListOfPrice x : oldPrices
+        ) {
+            sharePriceForListRepository.delete(x);
         }
-        for (ListOfPrice x:Prices
-        ) {sharePriceForListRepository.save(x);
+        for (ListOfPrice x : Prices
+        ) {
+            sharePriceForListRepository.save(x);
         }
     }
-    public SharePriceDTO convertToShareDTO(SharePrice sharePrice){
-        ModelMapper mapper=new ModelMapper();
 
-        return mapper.map(sharePrice,SharePriceDTO.class);
+    public SharePriceDTO convertToShareDTO(SharePrice sharePrice) {
+        ModelMapper mapper = new ModelMapper();
+
+        return mapper.map(sharePrice, SharePriceDTO.class);
     }
 
-    public SharePrice convertToSharePrice(SharePriceDTO sharePriceDTO){
-        ModelMapper mapper=new ModelMapper();
-
-        return mapper.map(sharePriceDTO,SharePrice.class);
+    public SharePrice convertToSharePrice(SharePriceDTO sharePriceDTO) {
+        ModelMapper mapper = new ModelMapper();
+        return mapper.map(sharePriceDTO, SharePrice.class);
     }
 
-    public UserSharePriceDTO convertToUserSharePriceDTO(SharePrice sharePrice){
-        ModelMapper mapper=new ModelMapper();
-
-        return mapper.map(sharePrice,UserSharePriceDTO.class);
+    public UserSharePriceDTO convertToUserSharePriceDTO(SharePrice sharePrice) {
+        ModelMapper mapper = new ModelMapper();
+        return mapper.map(sharePrice, UserSharePriceDTO.class);
     }
 
     public List<SharePriceDTO> getSharePrice(List<SecidAndNameOfShare> shareList) throws JsonProcessingException {
@@ -276,18 +284,19 @@ public class MainService {
         for (int i = 0; i < sharePrices.size(); i++) {
             sharePriceDTOList.add(this.convertToShareDTO(sharePrices.get(i)));
         }
-
-
         return sharePriceDTOList;
     }
 
-    public boolean createUser(User user){
-        if(userRepository.findByName(user.getName())!=null)
-            return false;
-        user.getRoleSet().add(Role.ROLE_USER);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        log.info("Saving new user with name {}",user.getName());
-        userRepository.save(user);
-        return true;
+    public void reset(){
+        date1="2014-06-09";
+        date2="2014-06-09";
+        sharePriceRepository.deleteAll();
+        userShares.setBankAccount(100000.00);
     }
+
+    public Double getBankAccount(){
+        return userShares.getBankAccount();
+    }
+
+
 }

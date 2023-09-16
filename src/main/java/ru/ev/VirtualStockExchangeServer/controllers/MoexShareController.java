@@ -28,14 +28,20 @@ public class MoexShareController {
     private final MainService mainService;
 
     @GetMapping("/")
-    public String showShares(Model model1, Model model2, Model model3, Model model4) throws JsonProcessingException {
+    public String showShares(Model model1, Model model2, Model model3, Model model4,Model model5) throws JsonProcessingException {
         List<SecidAndNameOfShare> listOfPrice = mainService.showListOfShortNameShares();
         model1.addAttribute("listOfPrice", getSharePrice(listOfPrice));
         List<SharePrice> userShares = mainService.getUserShares();
         model2.addAttribute("userShares", userShares);
         model3.addAttribute("sum", mainService.sumOfTotalCoast(userShares));
         model4.addAttribute("date", mainService.startDate());
+        model5.addAttribute("bankAccount",mainService.getBankAccount());
         return "show";
+    }
+    @PostMapping("/reset")
+    public String resetAll(){
+        mainService.reset();
+        return "redirect:/";
     }
 
     @PostMapping("/buyShare")
@@ -43,12 +49,11 @@ public class MoexShareController {
         SharePrice sharePrice = mainService.convertToSharePrice(sharePriceDTO);
         sharePrice.setCount(count);
         sharePrice.setTotalCost();
-        mainService.addUserShares(sharePrice);
+        mainService.addUserShares(sharePrice,count);
         return "redirect:/";
     }
 
     @PostMapping("/sellShare")
-
     public String sellShare(@ModelAttribute() SharePriceDTO sharePriceDTO,  @ModelAttribute("s") int count) {
         SharePrice sharePrice = mainService.convertToSharePrice(sharePriceDTO);
        try {
@@ -63,6 +68,11 @@ public class MoexShareController {
 
     @PostMapping("/setDate")
     public String setDate(@ModelAttribute("calendar") LocalDate date) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate oldDate= LocalDate.parse(mainService.getDate(),dateTimeFormatter);
+        if(date.isBefore(oldDate)){
+            return "ErrorDate";
+        }
         mainService.setDate(date);
         return "redirect:/";
     }
