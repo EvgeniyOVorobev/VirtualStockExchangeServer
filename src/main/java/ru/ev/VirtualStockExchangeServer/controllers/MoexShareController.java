@@ -3,11 +3,14 @@ package ru.ev.VirtualStockExchangeServer.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.ev.VirtualStockExchangeServer.DTO.SharePriceDTO;
+import ru.ev.VirtualStockExchangeServer.Exeption.ExceededTheNumberOfShares;
+import ru.ev.VirtualStockExchangeServer.Exeption.RanOutOfMoney;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.SharePrice;
 import ru.ev.VirtualStockExchangeServer.models.SharePriceForList.ListOfPrice;
 import ru.ev.VirtualStockExchangeServer.models.SharesList.SecidAndNameOfShare;
@@ -24,22 +27,22 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/")
 public class MoexShareController {
-
     private final MainService mainService;
 
     @GetMapping("/")
-    public String showShares(Model model1, Model model2, Model model3, Model model4,Model model5) throws JsonProcessingException {
+    public String showShares(Model model1, Model model2, Model model3, Model model4, Model model5) throws JsonProcessingException {
         List<SecidAndNameOfShare> listOfPrice = mainService.showListOfShortNameShares();
         model1.addAttribute("listOfPrice", getSharePrice(listOfPrice));
         List<SharePrice> userShares = mainService.getUserShares();
         model2.addAttribute("userShares", userShares);
         model3.addAttribute("sum", mainService.sumOfTotalCoast(userShares));
         model4.addAttribute("date", mainService.startDate());
-        model5.addAttribute("bankAccount",mainService.getBankAccount());
+        model5.addAttribute("bankAccount", mainService.getBankAccount());
         return "show";
     }
+
     @PostMapping("/reset")
-    public String resetAll(){
+    public String resetAll() {
         mainService.reset();
         return "redirect:/";
     }
@@ -49,28 +52,32 @@ public class MoexShareController {
         SharePrice sharePrice = mainService.convertToSharePrice(sharePriceDTO);
         sharePrice.setCount(count);
         sharePrice.setTotalCost();
-        mainService.addUserShares(sharePrice,count);
+        try {
+            mainService.addUserShares(sharePrice, count);
+        } catch (RanOutOfMoney e) {
+            System.out.println(e.getMessage());
+            return "OutOfMoney";
+        }
         return "redirect:/";
     }
 
     @PostMapping("/sellShare")
-    public String sellShare(@ModelAttribute() SharePriceDTO sharePriceDTO,  @ModelAttribute("s") int count) {
+    public String sellShare(@ModelAttribute() SharePriceDTO sharePriceDTO, @ModelAttribute("s") int count) {
         SharePrice sharePrice = mainService.convertToSharePrice(sharePriceDTO);
-       try {
-           mainService.deleteShare(sharePrice, count);
-       }
-       catch (RuntimeException e){
-           System.out.println(e.getMessage());
-           return "ErrorCount";
-       }
+        try {
+            mainService.deleteShare(sharePrice, count);
+        } catch (ExceededTheNumberOfShares e) {
+            System.out.println(e.getMessage());
+            return "ErrorCount";
+        }
         return "redirect:/";
     }
 
     @PostMapping("/setDate")
     public String setDate(@ModelAttribute("calendar") LocalDate date) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate oldDate= LocalDate.parse(mainService.getDate(),dateTimeFormatter);
-        if(date.isBefore(oldDate)){
+        LocalDate oldDate = LocalDate.parse(mainService.getDate(), dateTimeFormatter);
+        if (date.isBefore(oldDate)) {
             return "ErrorDate";
         }
         mainService.setDate(date);

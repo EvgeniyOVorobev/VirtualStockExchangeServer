@@ -1,0 +1,21 @@
+version: "3"
+services:
+  db:
+    image: a7cd6c570c81de481ebcadcb3dc310bb9cc4f5f9fe6dd05ba2a96e58fceee2ad
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    restart: always
+  app:
+    image: edd713ef084aaf03afc2c8fd95f89b677df5c3e62064291f8707ce6ecbfc70f8
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/postgres
+    depends_on:
+      - db
+    ports:
+      - 8080:8080
+
+

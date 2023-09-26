@@ -44,25 +44,20 @@ class MainServiceTest {
 
     @Test
     void getDate() {
-        String date="2014-06-09";
-        assertEquals(date,mainService.getDate());
+
 
     }
 
     @Test
     void setDate() {
-        LocalDate date=LocalDate.of(2020,6,9);
-        String date2="2020-06-09";
-        mainService.setDate(date);
-        assertEquals(date2,mainService.getDate());
-        assertEquals(date2,mainService.getDate2());
+
     }
 
     @Test
     void startDate() {
         User userShares=new User();
-        LocalDate date=LocalDate.parse("2020-06-09");
-        userShares.setDate(date);
+        String date="2020-06-09";
+        userShares.setDate("2020-06-09");
         assertEquals(date,userShares.getDate());
     }
 

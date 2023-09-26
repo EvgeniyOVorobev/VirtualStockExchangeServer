@@ -17,14 +17,14 @@
 <div th:each="Double:${bankAccount}">
     <table border="1"  >
     <tr>
-    <th>Кошелёк</th>
+    <th>Доступные финансы</th>
     <td   th:text="${bankAccount}" >имя</td>
     </tr>
     </table>
 </div>
 <form action="#" th:action="@{/reset}"  method="post">
 
-        <input type="submit" value="Сброс"></p>
+        <input type="submit" value="Начать все сначала"></p>
 
 </form>
 <form action="#" th:action="@{/setDate}" th:object="${LocalDate}" method="post">
@@ -32,13 +32,9 @@
         <input type="submit" value="Назначить дату"></p>
 
 </form>
-Список акций
 
-<table border="1" width="400" >
-    <tr><th width="200">Акция</th>                              <th width="200">Цена</th></tr>
-
-</table>
 <table>
+
     <tr>
         <td>
             <table>

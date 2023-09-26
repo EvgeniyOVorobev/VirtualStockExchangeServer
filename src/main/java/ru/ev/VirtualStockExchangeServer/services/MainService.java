@@ -14,7 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import ru.ev.VirtualStockExchangeServer.DTO.SharePriceDTO;
 import ru.ev.VirtualStockExchangeServer.DTO.UserSharePriceDTO;
+import ru.ev.VirtualStockExchangeServer.Exeption.ExceededTheNumberOfShares;
 import ru.ev.VirtualStockExchangeServer.Exeption.LimitRequestsException;
+import ru.ev.VirtualStockExchangeServer.Exeption.RanOutOfMoney;
 import ru.ev.VirtualStockExchangeServer.Exeption.RestTemplateResponseErrorHandler;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.ListListSharePrice;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.ListSharePrice;
@@ -41,41 +43,30 @@ import java.util.List;
 @Slf4j
 @PropertySource("classpath:URL.properties")
 public class MainService {
-    @Autowired
+
     private final ShareListRepository shareListRepository;
     private final SharePriceForListRepository sharePriceForListRepository;
     private final SharePriceRepository sharePriceRepository;
     private final ObjectMapper objectMapper;
-    private final User userShares = new User();
-    @Value("${urlForListOfPrice1}")
-    private String a;
-    @Value("${urlForListOfPrice2}")
-    private String c;
-    private String date1 = "2014-06-09";
-    @Value("${urlForListOfPrice3}")
-    private String ca;
-    private String date2 = "2014-06-09";
-    @Value("${urlForListOfPrice4}")
-    private String de;
+    private final User userShares;
 
     public String getDate() {
-        return date1;
+        return userShares.getDate();
     }
 
     public String getDate2() {
-        return date2;
+        return userShares.getDate();
     }
 
     public void setDate(LocalDate date) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String date1 = date.format(dateTimeFormatter);
-        this.date1 = date1;
-        this.date2 = date1;
+        userShares.setDate(date1);
     }
 
     public LocalDate startDate() {
-        userShares.setDate(LocalDate.parse(date1));
-        return userShares.getDate();
+        LocalDate date = LocalDate.parse(userShares.getDate());
+        return date;
     }
 
     @Transactional
@@ -83,7 +74,7 @@ public class MainService {
         RestTemplate restTemplate = new RestTemplate();
         log.info("Request for share {}", secid);
         restTemplate.setErrorHandler(new RestTemplateResponseErrorHandler());
-        String json = restTemplate.getForObject(a + secid + c + date1 + ca + date2 + de, String.class);
+        String json = restTemplate.getForObject(userShares.getA() + secid + userShares.getC() + userShares.getDate() + userShares.getCa() + userShares.getDate() + userShares.getDe(), String.class);
         if (json.isEmpty()) {
             log.error("Moex isn't answering for getting prices.");
             throw new LimitRequestsException("Moex isn't answering for getting prices.");
@@ -113,7 +104,7 @@ public class MainService {
         List<SecidAndNameOfShare> shareList = new ArrayList<>();
         if (shareListRepository.findAll().isEmpty()) {
             restTemplate.setErrorHandler(new RestTemplateResponseErrorHandler());
-            String jsonList = restTemplate.getForObject("https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities.json?from=" + date1 + "&till=" + date2 + "&iss.meta=off&iss.only=history&history.columns=SHORTNAME,SECID", String.class);
+            String jsonList = restTemplate.getForObject("https://iss.moex.com/iss/history/engines/stock/markets/shares/boards/TQBR/securities.json?from=" + userShares.getDate() + "&till=" + userShares.getDate() + "&iss.meta=off&iss.only=history&history.columns=SHORTNAME,SECID", String.class);
             log.error("Getting short name of share");
             if (jsonList.isEmpty()) {
                 log.error("Moex isn't answering for getting secid.");
@@ -126,7 +117,6 @@ public class MainService {
         } else {
             shareList = shareListRepository.findAll();
         }
-
         return shareList;
     }
 
@@ -142,11 +132,10 @@ public class MainService {
     }
 
     @Transactional
-    public void addUserShares(SharePrice sharePrice,int count) {
+    public void addUserShares(SharePrice sharePrice, int count) throws RanOutOfMoney {
         if (sharePriceRepository.findAll().isEmpty()) {
             sharePriceRepository.save(sharePrice);
-            userShares.debitingFromAccount(sharePrice.getPrice()*count);
-
+            userShares.debitingFromAccount(sharePrice.getPrice() * count);
         } else {
             List<SharePrice> sharePrices1 = sharePriceRepository.findAll();
             for (int i = 0; i < sharePrices1.size(); i++) {
@@ -157,10 +146,11 @@ public class MainService {
                     sharePrice.setTotalCost();
                     sharePriceRepository.delete(sharePrices1.get(i));
                     sharePriceRepository.save(sharePrice);
-                    userShares.debitingFromAccount(sharePrice.getPrice()*count);
-                } else {sharePriceRepository.save(sharePrice);
-                    userShares.debitingFromAccount(sharePrice.getPrice()*count);
-                    }
+                    userShares.debitingFromAccount(sharePrice.getPrice() * count);
+                } else {
+                    sharePriceRepository.save(sharePrice);
+                    userShares.debitingFromAccount(sharePrice.getPrice() * count);
+                }
             }
         }
     }
@@ -189,7 +179,6 @@ public class MainService {
                     }
                 }
             }
-
             return userShareOld;
         }
     }
@@ -200,7 +189,7 @@ public class MainService {
     }
 
     @Transactional
-    public void deleteShare(SharePrice sharePrice, int count) throws RuntimeException {
+    public void deleteShare(SharePrice sharePrice, int count) throws ExceededTheNumberOfShares {
         sharePrice.setCount(count);
         List<SharePrice> sharePrices = sharePriceRepository.findAll();
         for (int i = 0; i < sharePrices.size(); i++) {
@@ -209,16 +198,16 @@ public class MainService {
                 int b = sharePrice.getCount();
                 if (a - b < 0) {
                     log.info("Error");
-                    throw new RuntimeException("Errorsses");
+                    throw new ExceededTheNumberOfShares("Exceeded the number of shares");
                 } else sharePrice.setCount(a - b);
                 if (sharePrice.getCount() == 0) {
                     sharePriceRepository.delete(sharePrices.get(i));
-                    userShares.plusAccount(sharePrice.getPrice()*count);
+                    userShares.plusAccount(sharePrice.getPrice() * count);
                 } else {
                     sharePrice.setTotalCost();
                     sharePriceRepository.delete(sharePrices.get(i));
                     sharePriceRepository.save(sharePrice);
-                    userShares.plusAccount(sharePrice.getPrice()*count);
+                    userShares.plusAccount(sharePrice.getPrice() * count);
                 }
             }
         }
@@ -231,7 +220,6 @@ public class MainService {
         for (int i = 0; i < newPrices.size(); i++) {
             Prices.add(new ListOfPrice().getShareFoListOfPrice(newPrices.get(i)));
         }
-
         for (ListOfPrice x : oldPrices
         ) {
             sharePriceForListRepository.delete(x);
@@ -244,7 +232,6 @@ public class MainService {
 
     public SharePriceDTO convertToShareDTO(SharePrice sharePrice) {
         ModelMapper mapper = new ModelMapper();
-
         return mapper.map(sharePrice, SharePriceDTO.class);
     }
 
@@ -287,14 +274,13 @@ public class MainService {
         return sharePriceDTOList;
     }
 
-    public void reset(){
-        date1="2014-06-09";
-        date2="2014-06-09";
+    public void reset() {
+        userShares.setDate("2014-06-09");
         sharePriceRepository.deleteAll();
         userShares.setBankAccount(100000.00);
     }
 
-    public Double getBankAccount(){
+    public Double getBankAccount() {
         return userShares.getBankAccount();
     }
 
