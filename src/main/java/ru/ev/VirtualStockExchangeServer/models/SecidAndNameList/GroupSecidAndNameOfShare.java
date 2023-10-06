@@ -1,5 +1,5 @@
 
-package ru.ev.VirtualStockExchangeServer.models.SharesList;
+package ru.ev.VirtualStockExchangeServer.models.SecidAndNameList;
 
 import com.fasterxml.jackson.annotation.*;
 
@@ -15,7 +15,7 @@ import java.util.List;
 })
 @Generated("jsonschema2pojo")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ListSecidAndNameOfShare {
+public class GroupSecidAndNameOfShare {
 
 
     @JsonProperty("data")

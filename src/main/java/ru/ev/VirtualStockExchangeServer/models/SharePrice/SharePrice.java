@@ -3,12 +3,9 @@ package ru.ev.VirtualStockExchangeServer.models.SharePrice;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import ru.ev.VirtualStockExchangeServer.models.SharePriceForList.ListOfPrice;
+import ru.ev.VirtualStockExchangeServer.models.ListOfPrices.ListOfPrice;
 import javax.annotation.processing.Generated;
 import java.time.LocalDate;
-
-
-
 @Entity
 @Table(name="shareprice")
 @Generated("jsonschema2pojo")
@@ -32,12 +29,12 @@ public class SharePrice {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate date;
     @Column(name="count")
-    private int count;
+    private int countOfShares;
     @Column(name="totalCost")
     private double totalCost;
 
     @Column(name="difference")
-    private double difference;
+    private double differenceBetweenOldPriceAndNewPrice;
 
     public Double getOldPrice() {
         return oldPrice;
@@ -52,15 +49,15 @@ public class SharePrice {
     }
 
     public double getDifference() {
-        return difference;
+        return differenceBetweenOldPriceAndNewPrice;
     }
 
     public void setDifference() {
         if(this.oldPrice<=0){
-            this.difference=0;
+            this.differenceBetweenOldPriceAndNewPrice =0;
         }
         else
-            this.difference=Math.round(((price-oldPrice)/oldPrice*100)*100.0)/100.0;
+            this.differenceBetweenOldPriceAndNewPrice =Math.round(((price-oldPrice)/oldPrice*100)*100.0)/100.0;
     }
 
     public double getTotalCost() {
@@ -68,15 +65,15 @@ public class SharePrice {
     }
 
     public void setTotalCost() {
-        this.totalCost = count*price;
+        this.totalCost = countOfShares *price;
     }
 
-    public int getCount() {
-        return count;
+    public int getCountOfShares() {
+        return countOfShares;
     }
 
-    public void setCount(int a) {
-        this.count = a;
+    public void setCountOfShares(int a) {
+        this.countOfShares = a;
     }
 
     public String getShortName() {

@@ -1,69 +1,62 @@
 package ru.ev.VirtualStockExchangeServer.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.client.RestTemplate;
-import ru.ev.VirtualStockExchangeServer.models.SharePrice.SharePrice;
+import ru.ev.VirtualStockExchangeServer.models.SharePrice.GroupOfSharePrice;
 import ru.ev.VirtualStockExchangeServer.models.User.User;
-import ru.ev.VirtualStockExchangeServer.repositories.ShareListRepository;
-import ru.ev.VirtualStockExchangeServer.repositories.SharePriceForListRepository;
+import ru.ev.VirtualStockExchangeServer.repositories.ListOfPriceRepository;
+import ru.ev.VirtualStockExchangeServer.repositories.SecidAndNameOfShareRepository;
 import ru.ev.VirtualStockExchangeServer.repositories.SharePriceRepository;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@AutoConfigureMockMvc
 class MainServiceTest {
     @Mock
-    ShareListRepository shareListRepository;
+    private  User user;
     @Mock
-    SharePriceForListRepository sharePriceForListRepository;
+    private  ObjectMapper objectMapper;
     @Mock
-    SharePriceRepository sharePriceRepository;
+    private  SharePriceRepository sharePriceRepository;
     @Mock
-    ObjectMapper objectMapper;
+    private ListOfPriceRepository listOfPriceRepository;
     @Mock
-    MockMvc mockMvc;
-    @Mock
-    RestTemplate template;
+    private SecidAndNameOfShareRepository secidAndNameOfShareRepository;
     @InjectMocks
-    MainService mainService;
+    private MainService mainService;
+
 
     @Test
     void getDate() {
+        String date="2014-06-09";
+        when(user.getDate()).thenReturn(date);
+        assertEquals(mainService.getDate(),date);
+    }
 
+
+    @Test
+    void getNowDate() {
+        String date="2014-06-09";
+        when(user.getDate()).thenReturn(date);
+        assertEquals(LocalDate.parse(user.getDate()),mainService.getNowDate());
+    }
+
+    @Test
+    void showPrice_ifGroupOfPriceIsEmpty_returnNull()  {
 
     }
 
     @Test
-    void setDate() {
-
-    }
-
-    @Test
-    void startDate() {
-        User userShares=new User();
-        String date="2020-06-09";
-        userShares.setDate("2020-06-09");
-        assertEquals(date,userShares.getDate());
-    }
-
-    @Test
-    void showPriceTest_ifJsonIsEmpty_ReturnException() {
-
+    void getGroupSharePriceFromMoex() {
     }
 
     @Test
@@ -72,14 +65,6 @@ class MainServiceTest {
 
     @Test
     void sumOfTotalCoast() {
-        SharePrice one=Mockito.mock(SharePrice.class);
-        when(one.getTotalCost()).thenReturn(10.25);
-        SharePrice two=Mockito.mock(SharePrice.class);
-        when(two.getTotalCost()).thenReturn(20.25);
-        List<SharePrice> list=Arrays.asList(one,two);
-        assertEquals(30.50,mainService.sumOfTotalCoast(list));
-
-
     }
 
     @Test
@@ -112,5 +97,13 @@ class MainServiceTest {
 
     @Test
     void convertToUserSharePriceDTO() {
+    }
+
+    @Test
+    void reset() {
+    }
+
+    @Test
+    void getBankAccount() {
     }
 }

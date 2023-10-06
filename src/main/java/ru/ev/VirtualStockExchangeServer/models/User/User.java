@@ -5,26 +5,25 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.ev.VirtualStockExchangeServer.Exeption.RanOutOfMoney;
 
-import java.time.LocalDate;
-
 @Component
 @Data
 public class User {
     private String date;
     private Double bankAccount;
     @Value("${urlForListOfPrice1}")
-    private String a;
+    private String firstUrl;
     @Value("${urlForListOfPrice2}")
-    private String c;
+    private String secondUrl;
     @Value("${urlForListOfPrice3}")
-    private String ca;
+    private String thirdUrl;
     @Value("${urlForListOfPrice4}")
-    private String de;
+    private String fourthUrl;
     {
         date = "2014-06-09";
         bankAccount = 100000.00;
     }
-    public void debitingFromAccount(Double sharePrice) throws RanOutOfMoney {
+    //
+    public void debitingFromAccount(Double sharePrice)  {
         double debet = bankAccount - sharePrice;
         if (debet < 0) {
             throw new RanOutOfMoney("Ran Out Of Money");

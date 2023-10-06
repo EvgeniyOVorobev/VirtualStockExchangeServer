@@ -1,4 +1,4 @@
-package ru.ev.VirtualStockExchangeServer.models.SharesList;
+package ru.ev.VirtualStockExchangeServer.models.SecidAndNameList;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

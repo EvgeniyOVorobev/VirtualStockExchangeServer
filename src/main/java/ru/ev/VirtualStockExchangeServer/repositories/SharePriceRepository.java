@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface SharePriceRepository extends JpaRepository<SharePrice, Long> {
 
+
 }

@@ -3,17 +3,15 @@ package ru.ev.VirtualStockExchangeServer.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.ev.VirtualStockExchangeServer.DTO.SharePriceDTO;
 import ru.ev.VirtualStockExchangeServer.Exeption.ExceededTheNumberOfShares;
 import ru.ev.VirtualStockExchangeServer.Exeption.RanOutOfMoney;
 import ru.ev.VirtualStockExchangeServer.models.SharePrice.SharePrice;
-import ru.ev.VirtualStockExchangeServer.models.SharePriceForList.ListOfPrice;
-import ru.ev.VirtualStockExchangeServer.models.SharesList.SecidAndNameOfShare;
+import ru.ev.VirtualStockExchangeServer.models.ListOfPrices.ListOfPrice;
+import ru.ev.VirtualStockExchangeServer.models.SecidAndNameList.SecidAndNameOfShare;
 import ru.ev.VirtualStockExchangeServer.services.MainService;
 
 
@@ -30,14 +28,22 @@ public class MoexShareController {
     private final MainService mainService;
 
     @GetMapping("/")
-    public String showShares(Model model1, Model model2, Model model3, Model model4, Model model5) throws JsonProcessingException {
-        List<SecidAndNameOfShare> listOfPrice = mainService.showListOfShortNameShares();
-        model1.addAttribute("listOfPrice", getSharePrice(listOfPrice));
-        List<SharePrice> userShares = mainService.getUserShares();
-        model2.addAttribute("userShares", userShares);
-        model3.addAttribute("sum", mainService.sumOfTotalCoast(userShares));
-        model4.addAttribute("date", mainService.startDate());
-        model5.addAttribute("bankAccount", mainService.getBankAccount());
+    public String showShares(Model listOfPrices, Model userShares, Model sumOfTotalCoast, Model date, Model bankAccount) throws JsonProcessingException {
+        List<SecidAndNameOfShare> listOfSecidAndName = mainService.showListOfShortNameShares();
+        List<SharePriceDTO> priceList=getSharePrices(listOfSecidAndName);
+        listOfPrices.addAttribute("listOfPrices", priceList);
+
+        List<SharePrice> listOfUserShares = mainService.getUserShares();
+        userShares.addAttribute("userShares", listOfUserShares);
+
+        double sumTotalCoast=mainService.sumOfTotalCoast(listOfUserShares);
+        sumOfTotalCoast.addAttribute("sum", sumTotalCoast);
+
+        LocalDate nowDate=mainService.getNowDate();
+        date.addAttribute("date", nowDate);
+
+        double userBankAccount=mainService.getBankAccount();
+        bankAccount.addAttribute("bankAccount", userBankAccount);
         return "show";
     }
 
@@ -50,7 +56,7 @@ public class MoexShareController {
     @PostMapping("/buyShare")
     public String buyShare(@ModelAttribute() SharePriceDTO sharePriceDTO, @ModelAttribute("t") int count) {
         SharePrice sharePrice = mainService.convertToSharePrice(sharePriceDTO);
-        sharePrice.setCount(count);
+        sharePrice.setCountOfShares(count);
         sharePrice.setTotalCost();
         try {
             mainService.addUserShares(sharePrice, count);
@@ -84,7 +90,7 @@ public class MoexShareController {
         return "redirect:/";
     }
 
-    public List<SharePriceDTO> getSharePrice(List<SecidAndNameOfShare> shareList) throws JsonProcessingException {
+    public List<SharePriceDTO> getSharePrices(List<SecidAndNameOfShare> shareList) throws JsonProcessingException {
         List<SharePrice> sharePrices = new ArrayList<>();
         List<ListOfPrice> sharePriceForLists = new ArrayList<>();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -92,8 +98,7 @@ public class MoexShareController {
             for (int i = 0; i < shareList.size(); i++) {
                 sharePrices.addAll(mainService.showPrice(shareList.get(i).getSecid()));
             }
-        } else if (
-                !mainService.getDate().equals(mainService.getListOfSharesPrice().get(0).getDate().format(dateTimeFormatter))) {
+        } else if (!mainService.getDate().equals(mainService.getListOfSharesPrice().get(0).getDate().format(dateTimeFormatter))) {
             List<SharePrice> newPrices = new ArrayList<>();
             for (int i = 0; i < shareList.size(); i++) {
                 newPrices.addAll(mainService.showPrice(shareList.get(i).getSecid()));

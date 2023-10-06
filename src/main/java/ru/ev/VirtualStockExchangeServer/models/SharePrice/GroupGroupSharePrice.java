@@ -1,4 +1,4 @@
-package ru.ev.VirtualStockExchangeServer.models.SharesList;
+package ru.ev.VirtualStockExchangeServer.models.SharePrice;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -15,17 +15,17 @@ import javax.annotation.processing.Generated;
         "history"
 })
 @Generated("jsonschema2pojo")
-public class ListListSecidAndNameOfShare {
+public class GroupGroupSharePrice {
     @JsonProperty("history")
-    private ListSecidAndNameOfShare listShare;
+    private GroupOfSharePrice listShare;
 
     @JsonProperty("history")
-    public ListSecidAndNameOfShare getListShare() {
+    public GroupOfSharePrice getListSharePrice() {
         return listShare;
     }
 
     @JsonProperty("history")
-    public void setListShare(ListSecidAndNameOfShare history) {
+    public void setListSharePrice(GroupOfSharePrice history) {
         this.listShare = history;
     }
 

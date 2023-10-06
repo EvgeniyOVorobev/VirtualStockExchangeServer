@@ -1,4 +1,4 @@
-package ru.ev.VirtualStockExchangeServer.models.SharePriceForList;
+package ru.ev.VirtualStockExchangeServer.models.ListOfPrices;
 
 
 import jakarta.persistence.*;
